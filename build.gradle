@@ -1,0 +1,69 @@
+buildscript {
+    repositories {
+        jcenter()
+        maven {
+            name = 'forge'
+            url = 'http://files.minecraftforge.net/maven'
+        }
+    }
+
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-20160116.192356-17'
+        classpath('nl.javadude.gradle.plugins:license-gradle-plugin:0.11.0') {
+            exclude module: 'guava'
+        }
+    }
+}
+
+plugins {
+    id 'org.spongepowered.plugin' version '0.6'
+    id 'maven'
+}
+
+apply plugin: 'net.minecraftforge.gradle.forge'
+
+// Environment variables for the build set by the build server
+ext.buildNumber = System.env.BUILD_NUMBER ?: '0'
+
+defaultTasks 'clean', 'build'
+
+sourceCompatibility = '1.8'
+targetCompatibility = '1.8'
+
+archivesBaseName = project.name.toLowerCase()
+
+minecraft {
+    forgeVersion = project.forgeVersion
+    mappings = project.mcpMappings
+    runDir = "run"
+}
+
+version = "$minecraft.version-$project.version-$buildNumber"
+
+dependencies {
+	compile("org.spongepowered:spongeforge:1.8.9-1890-4.2.0-BETA-1526:dev")
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir 'src'
+        }
+    }
+}
+
+if (JavaVersion.current().isJava8Compatible()) {
+    tasks.withType(Javadoc) {
+        options.addStringOption('Xdoclint:none', '-quiet')
+    }
+}
+
+// Support uploading with FTP
+configurations {
+    deployerJars // Deployment dependency
+}
+
+dependencies {
+    deployerJars 'org.apache.maven.wagon:wagon-ftp:2.10'
+}
+
